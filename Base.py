@@ -1,7 +1,7 @@
 import pygame
 import random
 from typing import List, Tuple
-
+# from move import Player
 class MapGenerator:
     def __init__(self, width=100, height=100, tile_size=16):
         self.width = width
@@ -32,7 +32,6 @@ class MapGenerator:
     def generate(self):
         """マップを生成"""
         self.rooms.clear()
-        
         # 全体を壁で埋める
         for x in range(self.width):
             for y in range(self.height):
@@ -128,10 +127,13 @@ def main():
     map_gen = MapGenerator(width=100, height=100, tile_size=16)
     map_gen.generate()
     
-    # カメラ位置
-    camera_x = 0
-    camera_y = 0
-    camera_speed = 5
+    # プレイヤー生成
+    from move import Player
+    player = Player(
+        map_gen.rooms[0].centerx,
+        map_gen.rooms[0].centery,
+        tile_size=16
+    )
     
     running = True
     while running:
@@ -140,40 +142,36 @@ def main():
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    # スペースキーで再生成
                     map_gen.generate()
-                    camera_x = 0
-                    camera_y = 0
+                    # プレイヤーを新しいマップの最初の部屋に配置
+                    player.tile_x = map_gen.rooms[0].centerx
+                    player.tile_y = map_gen.rooms[0].centery
         
-        # カメラ移動 (矢印キー)
+        # プレイヤー移動（WASDキー）
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            camera_x -= camera_speed
-        if keys[pygame.K_RIGHT]:
-            camera_x += camera_speed
-        if keys[pygame.K_UP]:
-            camera_y -= camera_speed
-        if keys[pygame.K_DOWN]:
-            camera_y += camera_speed
+        player.handle_input(keys, map_gen)
         
-        # カメラ位置の制限
-        camera_x = max(0, min(camera_x, map_gen.width * map_gen.tile_size - 800))
-        camera_y = max(0, min(camera_y, map_gen.height * map_gen.tile_size - 600))
+        # カメラをプレイヤーに追従
+        camera_x, camera_y = player.get_camera_pos(
+            800, 600,
+            map_gen.width * map_gen.tile_size,
+            map_gen.height * map_gen.tile_size
+        )
         
         # 描画
         screen.fill((0, 0, 0))
         map_gen.draw(screen, camera_x, camera_y)
+        player.draw(screen, camera_x, camera_y)
         
         # UI表示
         font = pygame.font.Font(None, 36)
-        text = font.render("SPACE: Regenerate | Arrows: Move", True, (255, 255, 255))
+        text = font.render("WASD: Move | SPACE: Regenerate", True, (255, 255, 255))
         screen.blit(text, (10, 10))
         
         pygame.display.flip()
         clock.tick(60)
     
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
