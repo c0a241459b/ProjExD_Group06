@@ -34,8 +34,6 @@ def play_random_bgm(folder="bgm"):
 
             pygame.mixer.music.set_volume(0.1)  # 音量調整（0.0〜1.0）
 
-
-
             pygame.mixer.music.play(-1)  # -1 はループ再生
             print(f"BGM再生中: {chosen_bgm}")
         else:
@@ -107,11 +105,8 @@ def main():
     show_traps = False
     current_floor = 1
 
-
     # 初期マップ生成のあたり
     play_random_bgm("bgm") # ここで最初のBGMを再生
-
-    
     
     running = True
     while running:
